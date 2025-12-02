@@ -1,0 +1,15 @@
+# macOS system files
+.DS_Store
+**/.DS_Store
+
+.DS_Store
+**/.DS_Store
+
+cache/
+*.h5ad
+
+# Don't store coding word file
+coding for website.docx
+
+# don't store pycache
+__pycache__/
