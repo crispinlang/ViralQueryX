@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="en">
   <head>
+    
+    <link rel="icon" type="image/svg+xml"
+          href="{{ url_for('static', filename='logo.jpg') }}">
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -84,8 +88,9 @@
         This is the landing page of my Flask application.  
         Click below to see results loaded from a SQL database.
       </p>
-      <!-- Link to /results -->
+      <!-- Link to the different pages -->
       <a href="{{ url_for('results') }}" class="button">View Results</a>
+      <a href="{{ url_for('testing') }}" class="button">View Testing</a>
     </div>
   </body>
 </html>

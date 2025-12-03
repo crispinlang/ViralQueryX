@@ -7,23 +7,21 @@ from flask_mysqldb import MySQL
 app = Flask(__name__)
 app.debug = True
 
-app.config['MYSQL_HOST'] = 'localhost'      # or '127.0.0.1'
+app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'viral_user'
-app.config['MYSQL_PASSWORD'] = 'B%$RYNGQNq4$kJ%'  # same as in DB_URI
+app.config['MYSQL_PASSWORD'] = 'B%$RYNGQNq4$kJ%'
 app.config['MYSQL_DB'] = 'viral_db'
 app.config['MYSQL_PORT'] = 3306
 
 mysql = MySQL(app)
 
 
-# Landing page
 @app.route("/")
 def home():
     # Renders templates/home.html
     return render_template("home.html")
 
 
-# Results page (no SQL yet, just display)
 @app.route("/results")
 def results():
     cur = mysql.connection.cursor()
@@ -52,3 +50,32 @@ def results():
 
     # 4. Send everything to the template
     return render_template("results.html", tables=tables)
+
+
+@app.route("/testing")
+def testing():
+    cur = mysql.connection.cursor()
+
+    table_names = [
+        "virus",
+        "protein_sequence",
+        "genome_sequence",
+        "enzyme_annotation",
+    ]
+
+    tables = []
+
+    for name in table_names:
+        cur.execute(f"SELECT * FROM `{name}`;")
+        rows = cur.fetchall()
+        colnames = [desc[0] for desc in cur.description]
+
+        tables.append({
+            "name": name,
+            "columns": colnames,
+            "rows": rows
+        })
+
+    cur.close()
+
+    return render_template("testing.html", tables=tables)
