@@ -1,18 +1,20 @@
 ## Package import:
 from flask import Flask, render_template, request
 from flask_mysqldb import MySQL
-from flask_sqlalchemy import SQLAlchemy
 
 
 # initialize flask
 app = Flask(__name__)
+app.debug = True
 
-# Configuring the Flask app to connect to the MySQL database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://viral_user:B%$RYNGQNq4$kJ%@localhost/viral_db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['MYSQL_HOST'] = 'localhost'      # or '127.0.0.1'
+app.config['MYSQL_USER'] = 'viral_user'
+app.config['MYSQL_PASSWORD'] = 'B%$RYNGQNq4$kJ%'  # same as in DB_URI
+app.config['MYSQL_DB'] = 'viral_db'
+app.config['MYSQL_PORT'] = 3306
 
-# Creating an instance of the SQLAlchemy class
-db = SQLAlchemy(app)
+mysql = MySQL(app)
+
 
 # Landing page
 @app.route("/")
@@ -24,14 +26,29 @@ def home():
 # Results page (no SQL yet, just display)
 @app.route("/results")
 def results():
-    # Renders templates/results.html
-    return render_template("results.html")
+    cur = mysql.connection.cursor()
 
+    # 1. Get all table names
+    cur.execute("SHOW TABLES;")
+    table_names = [row[0] for row in cur.fetchall()]
 
-# Your hello route
-# @app.route("/hello")
-# @app.route("/hello/<name>")
-# def hello(name=None):
-#     if name:
-#         return f"<p>Hello, {name}!</p>"
-#     return "<p>This is the site without my name</p>"
+    tables = []
+
+    for table in table_names:
+        # 2. Query each table
+        cur.execute(f"SELECT * FROM `{table}`;")
+        rows = cur.fetchall()
+
+        # 3. Get column names for that table
+        colnames = [desc[0] for desc in cur.description]
+
+        tables.append({
+            "name": table,
+            "columns": colnames,
+            "rows": rows
+        })
+
+    cur.close()
+
+    # 4. Send everything to the template
+    return render_template("results.html", tables=tables)

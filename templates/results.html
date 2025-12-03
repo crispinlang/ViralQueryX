@@ -71,8 +71,7 @@
 
   </head>
 
-  <body>
-
+<body>
     <div class="container">
 
       <a href="{{ url_for('home') }}" class="back-link">← Back to Home</a>
@@ -81,29 +80,32 @@
 
       <div class="results-box">
 
-        <div class="result-item">
-          <div class="label">Name</div>
-          <div class="value">John Doe</div>
-        </div>
+        <h1>All Tables in Database</h1>
 
-        <div class="result-item">
-          <div class="label">Score</div>
-          <div class="value">87</div>
-        </div>
+        {% for table in tables %}
+            <h2>{{ table.name }}</h2>
 
-        <div class="result-item">
-          <div class="label">Status</div>
-          <div class="value">Passed</div>
-        </div>
-
-        <div class="result-item">
-          <div class="label">Comments</div>
-          <div class="value">Everything looks great so far.</div>
-        </div>
-
+            <table>
+                <thead>
+                    <tr>
+                        {% for col in table.columns %}
+                        <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in table.rows %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
       </div>
 
-    </div>
+{% endfor %}
 
-  </body>
+</body>
 </html>

@@ -8,8 +8,12 @@
 cache/
 *.h5ad
 
-# Don't store coding word file
+# Word files:
 coding for website.docx
+website_projects_demands.docx
 
 # don't store pycache
 __pycache__/
+
+# logo
+logo.jpg
