@@ -158,41 +158,29 @@ def search():
     return render_template("search.html", q=query, scope=scope, tables=tables, chart_json=chart_json)
 
 
-#http://127.0.0.1:5000//api/testing?q=sars
-
-# This route tests your API setup by returning a very simple JSON object.
-# Put it in app.py and make sure you import jsonify above.
-
-# from flask import jsonify
-
-# @app.route("/api/testing", methods=["GET"])
-# def testing_api():
-#     data = {
-#         "status": "ok",
-#         "message": "API is reachable",
-#     }
-#     return jsonify(data)
-
-
 # but in JSON form for the REST API.
 @app.route("/api/testing", methods=["GET"])
 def testing_api():
     query = request.args.get("q", "").strip()
 
-    # Example: same TABLE_CONFIG as your /testing route
+    # Same TABLE_CONFIG idea as your /testing route
     TABLE_CONFIG = {
         "virus": {
-            "search":  ["virus_id", "name"],
-            "display": ["virus_id", "name", "family"],
+            "search":  ["virus_id", "name", "family", "genome_type", "ncbi_taxid", "ncbi_tax_url"],
+            "display": ["virus_id", "name", "family", "genome_type", "ncbi_taxid", "ncbi_tax_url"],
         },
-        # add other tables...
+        "genome_sequence": {
+            # tweak columns to match your actual schema
+            "search":  ["sequence_id", "virus_id", "accession", "length", "sequence", "ncbi_nuccore_url"],
+            "display": ["sequence_id", "virus_id", "accession", "length", "sequence", "ncbi_nuccore_url"],
+        },
     }
 
     results = []
 
     if query:
         like_value = f"%{query}%"
-        cur = mysql.connection.cursor()  # dict rows → nicer JSON
+        cur = mysql.connection.cursor()  # (If you want dict rows, use DictCursor below)
 
         for table_name, cfg in TABLE_CONFIG.items():
             search_cols = cfg["search"]
@@ -201,10 +189,15 @@ def testing_api():
             select_clause = ", ".join(f"`{col}`" for col in display_cols)
             where_clauses = " OR ".join(f"`{col}` LIKE %s" for col in search_cols)
 
-            sql = f"SELECT {select_clause} FROM `{table_name}` WHERE {where_clauses} LIMIT 100"
+            sql = f"""
+                SELECT {select_clause}
+                FROM `{table_name}`
+                WHERE {where_clauses}
+                LIMIT 100
+            """
             params = [like_value] * len(search_cols)
             cur.execute(sql, params)
-            rows = cur.fetchall()   # rows is now a list of dicts
+            rows = cur.fetchall()
 
             if rows:
                 results.append({
@@ -215,7 +208,6 @@ def testing_api():
 
         cur.close()
 
-    # This is plain JSON-serializable data: dict → list → dicts → strings/ints/etc.
     payload = {
         "query": query,
         "results": results,

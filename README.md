@@ -71,19 +71,40 @@ viralqueryx/
 └── data/
     ├── schema.sql         # Database schema
     └── sample_data.sql    # Optional sample data
+```
 
 The API is intended for integration with analysis pipelines, scripts, or external applications.
 
 ---
 
-## Running the Application Locally
+## RESTful API Usage
 
-1. Clone the repository:
----
+The REST API allows direct access to query results without using the web interface.
 
-## Running the Application Locally
+Example request:
 
-1. Clone the repository:
+```text
+{
+  "query": "coronavirus",
+  "results": [
+    {
+      "table": "virus",
+      "rows": [
+        {
+          "virus_id": 1,
+          "virus_name": "SARS-CoV-2",
+          "family_name": "Coronaviridae"
+        }
+      ]
+    }
+  ]
+}
+```
+
+This API can be consumed by:
+- Python scripts
+- Data analysis pipelines
+- External applications
 
 ---
 

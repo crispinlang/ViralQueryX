@@ -23,14 +23,16 @@
       </p>
     </div>
 
-    <div class="container">
-      <h2>Click here to query the DB: </h2>
-      <a href="{{ url_for('search') }}" class="button">DB Query</a>
-    </div>
+      <div class="actions">
+        <div class="container">
+          <h2>Click here to query the DB:</h2>
+          <a href="{{ url_for('search') }}" class="button">DB Query</a>
+        </div>
 
-    <div class="container">
-      <h2>Click here to view the tables: </h2>
-      <a href="{{ url_for('tables') }}" class="button">View tables</a>
-    </div>
+        <div class="container">
+          <h2>Click here to view the tables:</h2>
+          <a href="{{ url_for('tables') }}" class="button">View tables</a>
+        </div>
+      </div>
   </div>
 {% endblock %}
