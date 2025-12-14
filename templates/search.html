@@ -1,0 +1,185 @@
+<!-- This template renders the /search page.
+     It shows a search bar and then displays matching rows grouped by table.
+     It uses the shared base layout, navbar, and main styling. -->
+
+{% extends "base.html" %}
+
+{% block title %}ViralQueryX - Search{% endblock %}
+
+{% block content %}
+  <div class="container page-container">
+
+    <!-- Page title using the rounded header badge style -->
+    <h1 class="header-badge">Database query interface</h1>
+
+    <!-- ================= SEARCH BOX ================= -->
+
+    <div class="results-box mb-40">
+      <h2>Search the full database</h2>
+      <p>
+        This search bar allows searching across multiple tables contained in the DB.
+        Type a keyword (e.g. virus name, Baltimore group (e.g IV), accession, partial sequence) and see
+        where it appears in the database. Alternatively, you can select one of two premade search queries.
+      </p>
+
+      <!-- Example query buttons -->
+        <a href="{{ url_for('search', q='human', scope='virus') }}" class="button button--small">Query example 1</a>
+        <a href="{{ url_for('search', q='NC_001490', scope='genome_sequence') }}" class="button button--small">Query example 2</a>
+
+      <!-- Search form -->
+      <form action="{{ url_for('search') }}" method="get"
+            class="mt-20"
+            style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+
+        <input
+          type="text"
+          name="q"
+          placeholder="Enter your search term..."
+          value="{{ q }}"
+          style="
+            flex: 1;
+            min-width: 260px;
+            max-width: 520px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            font-size: 1rem;
+          "
+        >
+
+        <!-- Preserve scope -->
+        <input type="hidden" name="scope" value="{{ scope or 'all' }}">
+
+        <button type="submit" class="button">Search</button>
+      </form>
+    </div>
+
+    <!-- ================= SEARCH RESULTS ================= -->
+
+    {% if not q %}
+
+      <div class="results-box">
+        <h2>No query yet</h2>
+        <p>Enter a search term above to search across virus, genome, protein, and enzyme tables.</p>
+      </div>
+
+    {% else %}
+
+      {% if tables %}
+
+        <div class="results-box mb-40">
+          <h2>Search results for "{{ q }}"</h2>
+          <p>Found matches in {{ tables|length }} table{{ 's' if tables|length != 1 else '' }}.</p>
+        </div>
+
+        {% for table in tables %}
+          <div class="results-box mb-40">
+            <h2>{{ table.name }}</h2>
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    {% for col in table.columns %}
+                      <th>{{ col }}</th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {% for row in table.rows %}
+                    <tr>
+                      {% for cell in row %}
+                        {% set colname = table.columns[loop.index0] %}
+
+                        <td class="sequence-cell">
+                          {% if
+                            cell is string
+                            and colname in ['sequence', 'genome_sequence', 'protein_sequence']
+                            and cell|length > 120
+                          %}
+                            <span class="seq-short">{{ cell[:120] }}...</span>
+                            <span class="seq-full" style="display:none;">{{ cell }}</span>
+                            <button type="button" class="seq-toggle">Show more</button>
+                          {% else %}
+                            {{ cell }}
+                          {% endif %}
+                        </td>
+
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        {% endfor %}
+
+      <div class="results-box">
+              <!-- PURPOSE: Drop-in Plotly chart block for search.html.
+                Put this right after your "Search results for ..." summary box (or anywhere above the tables). -->
+
+            {% if chart_json %}
+              <div class="results-box mb-40">
+                <h2>Result statistics</h2>
+                <div id="hits-chart"></div>
+              </div>
+
+              <!-- Load Plotly (CDN) -->
+              <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+
+              <!-- Render the chart -->
+              <script>
+                  // PURPOSE: Load Plotly figure JSON safely from Flask/Jinja
+                  const fig = JSON.parse({{ chart_json | tojson | safe }});
+
+                  Plotly.newPlot(
+                    "hits-chart",
+                    fig.data,
+                    fig.layout,
+                    { displayModeBar: false, responsive: true }
+                  );
+              </script>
+            {% endif %}
+      </div>
+
+
+        
+      {% else %}
+
+        <div class="results-box">
+          <h2>No results</h2>
+          <p>Nothing in the database matched "<strong>{{ q }}</strong>". Try a different keyword.</p>
+        </div>
+
+      {% endif %}
+    {% endif %}
+
+  </div>
+
+  <!-- ================= SHOW MORE / SHOW LESS SCRIPT ================= -->
+
+  <script>
+    document.addEventListener("click", function (e) {
+      if (!e.target.classList.contains("seq-toggle")) return;
+
+      const td = e.target.closest("td");
+      const shortEl = td.querySelector(".seq-short");
+      const fullEl = td.querySelector(".seq-full");
+
+      const isCollapsed = fullEl.style.display === "none";
+
+      if (isCollapsed) {
+        fullEl.style.display = "inline";
+        shortEl.style.display = "none";
+        e.target.textContent = "Show less";
+      } else {
+        fullEl.style.display = "none";
+        shortEl.style.display = "inline";
+        e.target.textContent = "Show more";
+      }
+    });
+  </script>
+
+
+{% endblock %}

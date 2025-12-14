@@ -1,0 +1,126 @@
+<!-- This template shows all database tables using the shared base layout,
+     global styling (style.css), and navbar. Save this as: templates/results.html -->
+
+{% extends "base.html" %}
+
+{% block title %}ViralQueryX - Tables{% endblock %}
+
+{% block content %}
+  <div class="container page-container">
+
+    <!-- Page header using the rounded header badge style -->
+    <h1 class="header-badge">Tables</h1>
+
+    <!-- Intro card for the page -->
+    <div class="results-box mb-40">
+      <h2>All Tables in Database</h2>
+      <p>
+        Below are all tables loaded from the database. Each table is displayed in its own box
+        with consistent styling so you can quickly browse the data.
+      </p>
+    </div>
+
+    <!-- Loop over all tables passed from Flask (tables = [{name, columns, rows}, ...]) -->
+    {% for table in tables %}
+      <div class="results-box">
+
+        <!-- Name of the current table -->
+        <h2>{{ table.name }}</h2>
+
+        <!-- Wrapper allows horizontal scrolling if the table is very wide -->
+        <div class="table-wrapper">
+          <table>
+              <colgroup>
+                <col style="width: 10%;">
+                <col style="width: 30%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;"> <!-- sequence column -->
+                <col style="width: 20%;"> <!-- sequence column -->
+              </colgroup>
+            
+<thead>
+  <tr>
+    {% for col in table.columns %}
+      {% if col not in ['ncbi_tax_url', 'ncbi_nuccore_url'] %}
+        <th>{{ col }}</th>
+      {% endif %}
+    {% endfor %}
+  </tr>
+</thead>
+
+<tbody>
+  {% for row in table.rows %}
+    <tr>
+      {% for cell in row %}
+        {% set colname = table.columns[loop.index0] %}
+
+        {# Skip rendering the URL columns entirely (still available in row for linking) #}
+        {% if colname not in ['ncbi_tax_url', 'ncbi_nuccore_url'] %}
+          <td class="sequence-cell">
+
+            {# Virus name -> clickable NCBI taxonomy link #}
+            {% if colname == 'name' and ('ncbi_tax_url' in table.columns) %}
+              {% set url = row[table.columns.index('ncbi_tax_url')] %}
+              {% if url %}
+                <a href="{{ url }}" target="_blank" rel="noopener noreferrer">{{ cell }}</a>
+              {% else %}
+                {{ cell }}
+              {% endif %}
+
+            {# Genome accession -> clickable NCBI nuccore link #}
+            {% elif colname == 'accession' and ('ncbi_nuccore_url' in table.columns) %}
+              {% set url = row[table.columns.index('ncbi_nuccore_url')] %}
+              {% if url %}
+                <a href="{{ url }}" target="_blank" rel="noopener noreferrer">{{ cell }}</a>
+              {% else %}
+                {{ cell }}
+              {% endif %}
+
+            {# Long sequences -> collapsed output with toggle #}
+            {% elif cell is string and colname == 'sequence' and cell|length > 120 %}
+              <span class="seq-short">{{ cell[:120] }}...</span>
+              <span class="seq-full" style="display:none;">{{ cell }}</span>
+              <button type="button" class="seq-toggle">Show more</button>
+
+            {# Default output #}
+            {% else %}
+              {{ cell }}
+            {% endif %}
+
+          </td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+  {% endfor %}
+</tbody>
+          </table>
+        </div>
+
+      </div>
+    {% endfor %}
+
+  </div>
+
+
+
+
+<script>
+  document.querySelectorAll(".seq-toggle").forEach(button => {
+      button.addEventListener("click", () => {
+          const cell = button.parentElement;
+          const shortText = cell.querySelector(".seq-short");
+          const fullText = cell.querySelector(".seq-full");
+
+          if (fullText.style.display === "none") {
+              fullText.style.display = "inline";
+              shortText.style.display = "none";
+              button.textContent = "Show less";
+          } else {
+              fullText.style.display = "none";
+              shortText.style.display = "inline";
+              button.textContent = "Show more";
+          }
+      });
+  });
+</script>
+{% endblock %}

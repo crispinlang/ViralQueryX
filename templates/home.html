@@ -4,7 +4,7 @@
 
 {% extends "base.html" %}
 
-{% block title %}Home - Crispin's Website{% endblock %}
+{% block title %}Home - ViralQueryX{% endblock %}
 
 {% block head %}
   <!-- Extra CSS for the landing page (gradient background, glow, glass container) -->
@@ -16,18 +16,21 @@
     <div class="glow"></div>
 
     <div class="container">
-      <h1>Welcome to BioQueryX</h1>
+      <h1>Welcome to ViralQueryX</h1>
       <p>
-        This is the landing page of my project web application, using Flask in the backend
-        to display MySQL database results from my previous MySQL viral databse project.
+        This first website project utilizes a full web tech stack using Flask in the backend
+        to display and query a previously created MySQL database. In addition, there is a RESTful API functionality allowing for direct JSON result output via a URL query.
       </p>
     </div>
 
     <div class="container">
-      <h2>Click below to view and query the database</h2>
+      <h2>Click here to query the DB: </h2>
+      <a href="{{ url_for('search') }}" class="button">DB Query</a>
+    </div>
 
-      <a href="{{ url_for('results') }}" class="button">View Results</a>
-      <a href="{{ url_for('testing') }}" class="button">View Testing</a>
+    <div class="container">
+      <h2>Click here to view the tables: </h2>
+      <a href="{{ url_for('tables') }}" class="button">View tables</a>
     </div>
   </div>
 {% endblock %}

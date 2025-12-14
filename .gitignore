@@ -8,12 +8,20 @@
 cache/
 *.h5ad
 
+# folders
+no_build/
+
+# pycharm files
+.idea/
+
 # Word files:
 coding for website.docx
 website_projects_demands.docx
+RESTful_api_testing.docx
 
 # don't store pycache
 __pycache__/
 
-# logo
+# images
 logo.jpg
+pyvenv.png
